@@ -1,0 +1,37 @@
+# Copyright (C) 2022 Paul Barker
+# SPDX-License-Identifier: MIT
+
+name: CI
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+
+      - name: Run pre-commit checks
+        uses: pre-commit/action@v2.0.3
+
+  yocto-check-layer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout meta-linux-mainline
+        uses: actions/checkout@v2
+
+      - name: Checkout poky
+        uses: actions/checkout@v2
+        with:
+          repository: yoctoproject/poky
+          ref: master
+          path: poky
+
+      - name: Check layer compatibility
+        uses: docker://crops/poky
+        run: |
+          source poky/oe-init-build-env build-checklayer
+          yocto-check-layer
